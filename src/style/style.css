@@ -51,6 +51,7 @@ body::before {
 
 .cabecalho h1 {
     margin: 0;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe Print', cursive, sans-serif;
     font-size: 1.8rem;
     letter-spacing: 0.5px;
 }

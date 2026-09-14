@@ -1,0 +1,24 @@
+# Variáveis de ambiente e segredos
+.env
+.env.*
+*.env
+!.env.example
+*.pem
+*.key
+*credentials*
+*secret*
+
+# Dependências (caso algum dia sejam adicionadas)
+node_modules/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de editores/IDE
+.vscode/
+.idea/
+
+# Logs e temporários
+*.log
+*.tmp
