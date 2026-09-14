@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linguagens Formais e Autômatos</title>
+    <link rel="stylesheet" href="src/style/style.css">
+</head>
+<body>
+    <svg aria-hidden="true" style="position:absolute; width:0; height:0; overflow:hidden;">
+        <symbol id="icone-seta-direita" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+        </symbol>
+    </svg>
+
+    <header class="cabecalho">
+        <h1>LINGUAGENS FORMAIS E AUTÔMATOS</h1>
+    </header>
+
+    <main class="container">
+
+        <!-- GRAMÁTICA -->
+        <section class="card">
+            <h2>Gramática Regular <span class="formal">G = {N, T, P, S}</span></h2>
+
+            <div class="linha-controles">
+                <label for="select-exemplo">Carregar um exemplo (opcional)</label>
+                <div class="grupo-inline">
+                    <select id="select-exemplo"></select>
+                    <button id="btn-carregar-exemplo" class="botao-hover">
+                        <span class="botao-hover-texto-inicial">Carregar Exemplo</span>
+                        <span class="botao-hover-texto-final">
+                            <span>Carregar Exemplo</span>
+                            <svg class="botao-hover-icone" width="13" height="13"><use href="#icone-seta-direita"></use></svg>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grupo-ntS">
+                <div class="coluna-ntS">
+                    <h3>Não-terminais (N)</h3>
+                    <div class="linha-adicionar">
+                        <input type="text" id="input-novo-nao-terminal" maxlength="4" placeholder="S">
+                        <button id="btn-add-nao-terminal" class="botao-utilitario">Adicionar</button>
+                    </div>
+                    <div id="chips-nao-terminais" class="lista-chips"></div>
+                </div>
+
+                <div class="coluna-ntS">
+                    <h3>Terminais (T)</h3>
+                    <div class="linha-adicionar">
+                        <input type="text" id="input-novo-terminal" maxlength="4" placeholder="a">
+                        <button id="btn-add-terminal" class="botao-utilitario">Adicionar</button>
+                    </div>
+                    <div id="chips-terminais" class="lista-chips"></div>
+                </div>
+
+                <div class="coluna-ntS">
+                    <h3>Símbolo inicial (S)</h3>
+                    <select id="select-simbolo-inicial">
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="passo-guiado">
+                <h3>Produções (P)</h3>
+
+                <div class="campo-producao">
+                    <label for="select-lado-esquerdo">Lado esquerdo</label>
+                    <select id="select-lado-esquerdo">
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+
+                <div class="campo-producao">
+                    <label>Lado direito — clique nos símbolos, na ordem</label>
+                    <div id="paleta-simbolos" class="paleta-simbolos"></div>
+                </div>
+
+                <div class="rhs-construindo">
+                    <span class="destaque-rotulo">Construindo:</span>
+                    <span id="rhs-atual" class="rhs-atual">(vazio)</span>
+                </div>
+
+                <div class="grupo-botoes">
+                    <button id="btn-remover-ultimo-simbolo" class="botao-utilitario">Remover último símbolo</button>
+                    <button id="btn-limpar-rhs" class="botao-utilitario">Limpar</button>
+                    <button id="btn-adicionar-alternativa" class="botao-utilitario">Adicionar alternativa</button>
+                </div>
+
+                <ul id="lista-producoes" class="lista-producoes"></ul>
+            </div>
+
+            <button id="btn-validar" class="botao-hover">
+                <span class="botao-hover-texto-inicial">Validar Gramática</span>
+                <span class="botao-hover-texto-final">
+                    <span>Validar Gramática</span>
+                    <svg class="botao-hover-icone" width="13" height="13"><use href="#icone-seta-direita"></use></svg>
+                </span>
+            </button>
+
+            <div id="mensagem-gramatica" class="mensagem"></div>
+
+            <div id="resumo-gramatica" class="resumo-gramatica" hidden>
+                <p><strong>N:</strong> <span id="resumo-nao-terminais"></span>
+                    &nbsp;·&nbsp; <strong>T:</strong> <span id="resumo-terminais"></span>
+                    &nbsp;·&nbsp; <strong>S:</strong> <span id="resumo-inicial"></span></p>
+                <p><strong>P:</strong></p>
+                <ul id="resumo-producoes" class="lista-monoespacada"></ul>
+            </div>
+        </section>
+
+        <!-- RESULTADO -->
+        <section class="card">
+            <h2>Resultado</h2>
+
+            <div class="grupo-botoes">
+                <button id="btn-gerar-sentenca" class="botao-hover">
+                    <span class="botao-hover-texto-inicial">Gerar Sentença</span>
+                    <span class="botao-hover-texto-final">
+                        <span>Gerar Sentença</span>
+                        <svg class="botao-hover-icone" width="13" height="13"><use href="#icone-seta-direita"></use></svg>
+                    </span>
+                </button>
+                <button id="btn-limpar" class="botao-hover">
+                    <span class="botao-hover-texto-inicial">Limpar</span>
+                    <span class="botao-hover-texto-final">
+                        <span>Limpar</span>
+                        <svg class="botao-hover-icone" width="13" height="13"><use href="#icone-seta-direita"></use></svg>
+                    </span>
+                </button>
+            </div>
+
+            <div id="mensagem-derivacao" class="mensagem"></div>
+
+            <div class="destaque">
+                <span class="destaque-rotulo">Sentença gerada:</span>
+                <span id="sentenca-gerada" class="destaque-valor">—</span>
+            </div>
+
+            <div id="derivacao-simplificada" class="derivacao-simplificada"></div>
+
+            <div class="destaque">
+                <span class="destaque-rotulo">Expressão regular:</span>
+                <span id="regex-resultado" class="destaque-valor">—</span>
+            </div>
+
+            <div id="regex-mensagem" class="mensagem"></div>
+        </section>
+
+        <!-- DETALHES DO PROCESSO (recolhível) -->
+        <details class="card detalhes-processo">
+            <summary>Ver detalhes do processo (pilha, tabela de derivação e equações)</summary>
+
+            <div class="detalhes-conteudo">
+                <h3>Pilha</h3>
+                <p class="dica">O elemento mais à direita é o topo da pilha. Cada linha mostra o estado da pilha em uma etapa da derivação.</p>
+                <ul id="historico-pilha" class="historico-pilha lista-monoespacada"></ul>
+
+                <h3>Tabela de derivação</h3>
+                <div class="tabela-wrapper">
+                    <table class="tabela-derivacao">
+                        <thead>
+                            <tr>
+                                <th>Etapa</th>
+                                <th>Produção</th>
+                                <th>Pilha</th>
+                                <th>Saída</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-derivacao-corpo"></tbody>
+                    </table>
+                </div>
+
+                <h3>Equação da expressão regular</h3>
+                <p id="regex-equacao-final" class="equacao-final">—</p>
+            </div>
+        </details>
+
+    </main>
+
+    <footer class="rodape">
+        <p>Trabalho acadêmico — Disciplina de Linguagens Formais e Autômatos</p>
+    </footer>
+
+    <script src="src/script/pilha.js"></script>
+    <script src="src/script/gramatica.js"></script>
+    <script src="src/script/exemplos.js"></script>
+    <script src="src/script/derivacao.js"></script>
+    <script src="src/script/interface.js"></script>
+    <script src="src/script/script.js"></script>
+</body>
+</html>
