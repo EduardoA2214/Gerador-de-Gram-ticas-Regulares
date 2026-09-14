@@ -7,15 +7,11 @@
     <link rel="stylesheet" href="src/style/style.css">
 </head>
 <body>
-    <svg aria-hidden="true" style="position:absolute; width:0; height:0; overflow:hidden;">
-        <symbol id="icone-seta-direita" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 12h14"></path>
-            <path d="m12 5 7 7-7 7"></path>
-        </symbol>
-    </svg>
-
     <header class="cabecalho">
-        <h1>LINGUAGENS FORMAIS E AUTÔMATOS</h1>
+        <div class="cabecalho-conteudo">
+            <h1>Linguagens Formais e Autômatos</h1>
+            <p>Gerador de sentenças e expressões regulares</p>
+        </div>
     </header>
 
     <main class="container">
@@ -23,18 +19,13 @@
         <!-- GRAMÁTICA -->
         <section class="card">
             <h2>Gramática Regular <span class="formal">G = {N, T, P, S}</span></h2>
+            <p class="card-introducao">Defina os símbolos da gramática, monte as produções e valide antes de iniciar a derivação.</p>
 
             <div class="linha-controles">
                 <label for="select-exemplo">Carregar um exemplo (opcional)</label>
                 <div class="grupo-inline">
                     <select id="select-exemplo"></select>
-                    <button id="btn-carregar-exemplo" class="botao-hover">
-                        <span class="botao-hover-texto-inicial">Carregar Exemplo</span>
-                        <span class="botao-hover-texto-final">
-                            <span>Carregar Exemplo</span>
-                            <svg class="botao-hover-icone" width="13" height="13"><use href="#icone-seta-direita"></use></svg>
-                        </span>
-                    </button>
+                    <button id="btn-carregar-exemplo" class="botao-hover">Carregar exemplo</button>
                 </div>
             </div>
 
@@ -42,7 +33,7 @@
                 <div class="coluna-ntS">
                     <h3>Não-terminais (N)</h3>
                     <div class="linha-adicionar">
-                        <input type="text" id="input-novo-nao-terminal" maxlength="4" placeholder="S">
+                        <input type="text" id="input-novo-nao-terminal" maxlength="1" pattern="[A-Z]" placeholder="S" title="Digite uma letra maiúscula de A a Z" autocomplete="off">
                         <button id="btn-add-nao-terminal" class="botao-utilitario">Adicionar</button>
                     </div>
                     <div id="chips-nao-terminais" class="lista-chips"></div>
@@ -51,7 +42,7 @@
                 <div class="coluna-ntS">
                     <h3>Terminais (T)</h3>
                     <div class="linha-adicionar">
-                        <input type="text" id="input-novo-terminal" maxlength="4" placeholder="a">
+                        <input type="text" id="input-novo-terminal" maxlength="1" pattern="[a-z]" placeholder="a" title="Digite uma letra minúscula de a a z" autocomplete="off">
                         <button id="btn-add-terminal" class="botao-utilitario">Adicionar</button>
                     </div>
                     <div id="chips-terminais" class="lista-chips"></div>
@@ -94,13 +85,7 @@
                 <ul id="lista-producoes" class="lista-producoes"></ul>
             </div>
 
-            <button id="btn-validar" class="botao-hover">
-                <span class="botao-hover-texto-inicial">Validar Gramática</span>
-                <span class="botao-hover-texto-final">
-                    <span>Validar Gramática</span>
-                    <svg class="botao-hover-icone" width="13" height="13"><use href="#icone-seta-direita"></use></svg>
-                </span>
-            </button>
+            <button id="btn-validar" class="botao-hover">Validar gramática</button>
 
             <div id="mensagem-gramatica" class="mensagem"></div>
 
@@ -116,22 +101,11 @@
         <!-- RESULTADO -->
         <section class="card">
             <h2>Resultado</h2>
+            <p class="card-introducao">Acompanhe a sentença produzida e a expressão regular equivalente.</p>
 
             <div class="grupo-botoes">
-                <button id="btn-gerar-sentenca" class="botao-hover">
-                    <span class="botao-hover-texto-inicial">Gerar Sentença</span>
-                    <span class="botao-hover-texto-final">
-                        <span>Gerar Sentença</span>
-                        <svg class="botao-hover-icone" width="13" height="13"><use href="#icone-seta-direita"></use></svg>
-                    </span>
-                </button>
-                <button id="btn-limpar" class="botao-hover">
-                    <span class="botao-hover-texto-inicial">Limpar</span>
-                    <span class="botao-hover-texto-final">
-                        <span>Limpar</span>
-                        <svg class="botao-hover-icone" width="13" height="13"><use href="#icone-seta-direita"></use></svg>
-                    </span>
-                </button>
+                <button id="btn-gerar-sentenca" class="botao-hover">Gerar sentença</button>
+                <button id="btn-limpar" class="botao-hover">Limpar</button>
             </div>
 
             <div id="mensagem-derivacao" class="mensagem"></div>

@@ -174,8 +174,8 @@ const Interface = {
     /**
      * Desenha a paleta de símbolos clicáveis para montar o lado direito da produção.
      * Depois que o último símbolo colocado é um não-terminal, os demais botões ficam
-     * desabilitados (uma gramática regular só permite não-terminal na última posição).
-     * O botão de ε só fica habilitado enquanto nada foi colocado ainda.
+     * desabilitados, pois uma gramática regular só permite um não-terminal na última
+     * posição. O botão de ε só fica habilitado enquanto nada foi colocado ainda.
      */
     renderizarPaleta(naoTerminais, terminais, rhsAtual, aoClicarSimbolo) {
         const container = this.refs.paletaSimbolos;
@@ -212,11 +212,7 @@ const Interface = {
         this.refs.rhsAtual.textContent = rhsAtual.length > 0 ? rhsAtual.join('') : '(vazio)';
     },
 
-    /**
-     * Mostra a lista de produções já adicionadas, agrupadas por lado esquerdo
-     * e separadas por "|" (ex: "S -> a | b | c"), cada alternativa com seu
-     * próprio botão de remover.
-     */
+    /** Mostra cada produção adicionada em uma linha, com o botão de remover à direita. */
     renderizarListaProducoes(producoes, aoRemoverIndice) {
         const lista = this.refs.listaProducoes;
         lista.textContent = '';
@@ -229,49 +225,24 @@ const Interface = {
             return;
         }
 
-        const grupos = new Map();
         producoes.forEach((producao, indice) => {
-            if (!grupos.has(producao.esquerda)) {
-                grupos.set(producao.esquerda, []);
-            }
-            grupos.get(producao.esquerda).push({ producao, indice });
-        });
-
-        grupos.forEach((alternativas, esquerda) => {
             const item = document.createElement('li');
             item.className = 'producao-grupo';
 
-            const rotulo = document.createElement('span');
-            rotulo.className = 'producao-rotulo';
-            rotulo.textContent = `${esquerda} ->`;
-            item.appendChild(rotulo);
+            const texto = document.createElement('span');
+            texto.className = 'producao-rotulo';
+            texto.textContent = `${producao.esquerda} -> ${producao.direita.join('')}`;
 
-            alternativas.forEach((entrada, posicao) => {
-                if (posicao > 0) {
-                    const separador = document.createElement('span');
-                    separador.className = 'producao-separador';
-                    separador.textContent = '|';
-                    item.appendChild(separador);
-                }
+            const botaoRemover = document.createElement('button');
+            botaoRemover.type = 'button';
+            botaoRemover.className = 'producao-remover';
+            botaoRemover.textContent = '×';
+            botaoRemover.setAttribute('aria-label', `Remover ${producao.esquerda} -> ${producao.direita.join('')}`);
+            botaoRemover.title = 'Remover produção';
+            botaoRemover.addEventListener('click', () => aoRemoverIndice(indice));
 
-                const alternativa = document.createElement('span');
-                alternativa.className = 'producao-alternativa';
-
-                const texto = document.createElement('span');
-                texto.textContent = entrada.producao.direita.join('');
-
-                const botaoRemover = document.createElement('button');
-                botaoRemover.type = 'button';
-                botaoRemover.className = 'producao-remover';
-                botaoRemover.textContent = '×';
-                botaoRemover.setAttribute('aria-label', `Remover ${esquerda} -> ${entrada.producao.direita.join('')}`);
-                botaoRemover.addEventListener('click', () => aoRemoverIndice(entrada.indice));
-
-                alternativa.appendChild(texto);
-                alternativa.appendChild(botaoRemover);
-                item.appendChild(alternativa);
-            });
-
+            item.appendChild(texto);
+            item.appendChild(botaoRemover);
             lista.appendChild(item);
         });
     },

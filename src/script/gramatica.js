@@ -160,6 +160,16 @@ class Gramatica {
             this.erros.push('O conjunto de terminais (T) não pode estar vazio.');
         }
 
+        const naoTerminaisInvalidos = this.naoTerminais.filter(simbolo => !/^[A-Z]$/.test(simbolo));
+        if (naoTerminaisInvalidos.length > 0) {
+            this.erros.push(`Os não-terminais [${naoTerminaisInvalidos.join(', ')}] devem ser letras maiúsculas de A a Z.`);
+        }
+
+        const terminaisInvalidos = this.terminais.filter(simbolo => !/^[a-z]$/.test(simbolo));
+        if (terminaisInvalidos.length > 0) {
+            this.erros.push(`Os terminais [${terminaisInvalidos.join(', ')}] devem ser letras minúsculas de a a z.`);
+        }
+
         const intersecao = this.naoTerminais.filter(nt => this.terminais.includes(nt));
         if (intersecao.length > 0) {
             this.erros.push(`Os símbolos [${intersecao.join(', ')}] não podem ser terminais e não-terminais ao mesmo tempo.`);

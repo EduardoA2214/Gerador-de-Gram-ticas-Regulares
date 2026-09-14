@@ -30,6 +30,9 @@
     function configurarEventos() {
         Interface.refs.btnCarregarExemplo.addEventListener('click', tratarCarregarExemplo);
 
+        configurarCampoDeSimbolo(Interface.refs.inputNovoNaoTerminal, 'maiusculo');
+        configurarCampoDeSimbolo(Interface.refs.inputNovoTerminal, 'minusculo');
+
         Interface.refs.btnAddNaoTerminal.addEventListener('click', tratarAdicionarNaoTerminal);
         Interface.refs.btnAddTerminal.addEventListener('click', tratarAdicionarTerminal);
         Interface.refs.selectSimboloInicial.addEventListener('change', tratarSelecionarSimboloInicial);
@@ -41,6 +44,17 @@
         Interface.refs.btnValidar.addEventListener('click', tratarValidarGramatica);
         Interface.refs.btnGerarSentenca.addEventListener('click', tratarGerarSentenca);
         Interface.refs.btnLimpar.addEventListener('click', tratarLimpar);
+    }
+
+    /** Mantém nos campos apenas uma letra, usando a caixa esperada para cada tipo de símbolo. */
+    function configurarCampoDeSimbolo(campo, tipo) {
+        campo.addEventListener('input', () => {
+            const normalizado = tipo === 'maiusculo'
+                ? campo.value.toUpperCase()
+                : campo.value.toLowerCase();
+
+            campo.value = normalizado.replace(/[^A-Za-z]/g, '').slice(0, 1);
+        });
     }
 
     /** Redesenha todos os widgets do construtor guiado a partir do rascunho atual. */
@@ -59,6 +73,10 @@
     function tratarAdicionarNaoTerminal() {
         const valor = Interface.obterValorNovoNaoTerminal().trim();
         if (!valor) {
+            return;
+        }
+        if (!/^[A-Z]$/.test(valor)) {
+            Interface.mostrarMensagemGramatica('O não-terminal deve ser uma única letra maiúscula de A a Z.', 'erro');
             return;
         }
         if (rascunho.naoTerminais.includes(valor)) {
@@ -92,6 +110,10 @@
     function tratarAdicionarTerminal() {
         const valor = Interface.obterValorNovoTerminal().trim();
         if (!valor) {
+            return;
+        }
+        if (!/^[a-z]$/.test(valor)) {
+            Interface.mostrarMensagemGramatica('O terminal deve ser uma única letra minúscula de a a z.', 'erro');
             return;
         }
         if (rascunho.terminais.includes(valor)) {
