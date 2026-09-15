@@ -1,10 +1,3 @@
-/**
- * Estrutura de dados Pilha (Stack) - disciplina LIFO.
- *
- * É a pilha REAL utilizada pelo algoritmo de derivação (derivacao.js)
- * para controlar os símbolos pendentes da forma sentencial durante
- * a derivação de uma Gramática Regular.
- */
 class Pilha {
     constructor() {
         this.itens = [];
@@ -48,7 +41,6 @@ class Pilha {
 
     /**
      * Retorna uma cópia do array interno (do fundo para o topo).
-     * Uma cópia é retornada para que quem consome não altere o estado interno.
      */
     obterItens() {
         return [...this.itens];

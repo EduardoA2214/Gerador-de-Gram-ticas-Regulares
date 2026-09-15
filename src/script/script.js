@@ -63,14 +63,15 @@
         Interface.refs.btnNovaGramatica.addEventListener('click', tratarNovaGramatica);
     }
 
-    /** Mantém nos campos apenas uma letra, usando a caixa esperada para cada tipo de símbolo. */
+    /** Mantém nos campos apenas um caractere válido, usando a caixa esperada para cada tipo de símbolo. */
     function configurarCampoDeSimbolo(campo, tipo) {
         campo.addEventListener('input', () => {
             const normalizado = tipo === 'maiusculo'
                 ? campo.value.toUpperCase()
                 : campo.value.toLowerCase();
 
-            campo.value = normalizado.replace(/[^A-Za-z]/g, '').slice(0, 1);
+            const caracteresPermitidos = tipo === 'maiusculo' ? /[^A-Z]/g : /[^a-z0-9]/g;
+            campo.value = normalizado.replace(caracteresPermitidos, '').slice(0, 1);
         });
     }
 
@@ -175,8 +176,8 @@
         if (!valor) {
             return;
         }
-        if (!/^[a-z]$/.test(valor)) {
-            Interface.mostrarMensagemEtapa(1, 'O terminal deve ser uma única letra minúscula de a a z.', 'erro');
+        if (!/^[a-z0-9]$/.test(valor)) {
+            Interface.mostrarMensagemEtapa(1, 'O terminal deve ser uma única letra minúscula de a a z ou um dígito de 0 a 9.', 'erro');
             return;
         }
         if (rascunho.terminais.includes(valor)) {

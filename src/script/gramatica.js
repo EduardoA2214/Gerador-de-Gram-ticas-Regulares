@@ -1,15 +1,3 @@
-/**
- * Representa uma Gramática Regular G = {N, T, P, S}.
- *
- * N: conjunto de não-terminais
- * T: conjunto de terminais
- * P: conjunto de produções (mapa não-terminal -> lista de alternativas,
- *    cada alternativa é um array de símbolos)
- * S: símbolo inicial
- *
- * Esta classe apenas interpreta e valida a gramática digitada pelo usuário.
- * Nenhum trecho digitado pelo usuário é executado (não há uso de eval()).
- */
 class Gramatica {
     constructor() {
         this.naoTerminais = [];
@@ -19,11 +7,6 @@ class Gramatica {
         this.erros = [];
     }
 
-    /**
-     * Lê os campos vindos da interface (texto puro) e monta a gramática.
-     * Retorna true se a gramática for válida, false caso contrário.
-     * A lista de erros fica disponível em obterErros().
-     */
     carregarDeTexto(naoTerminaisTexto, terminaisTexto, producoesTexto, inicialTexto) {
         this.erros = [];
         this.naoTerminais = this._parseLista(naoTerminaisTexto);
@@ -45,10 +28,6 @@ class Gramatica {
             .filter(simbolo => simbolo.length > 0);
     }
 
-    /**
-     * Interpreta o texto de produções.
-     * Formato aceito, uma produção por linha: "A -> aB | b | ..."
-     */
     _parseProducoes(texto) {
         const producoes = {};
         const linhas = texto.split('\n').map(linha => linha.trim()).filter(linha => linha.length > 0);
@@ -90,13 +69,6 @@ class Gramatica {
         return producoes;
     }
 
-    /**
-     * Quebra uma alternativa (ex: "aS") em símbolos individuais (ex: ["a", "S"]),
-     * reconhecendo os não-terminais já declarados (mesmo com mais de um caractere).
-     * Não interpreta nem executa nada digitado pelo usuário, apenas separa texto.
-     * Também é usado pelo script.js para converter os exemplos prontos no
-     * mesmo formato estruturado usado pelo construtor guiado de produções.
-     */
     tokenizar(alternativa) {
         const normalizada = alternativa.trim();
         if (normalizada === 'ε' || normalizada === '&' || normalizada.toLowerCase() === 'epsilon') {
@@ -147,10 +119,6 @@ class Gramatica {
         return this.producoes[naoTerminal] || [];
     }
 
-    /**
-     * Executa todas as validações estruturais da gramática.
-     * Preenche this.erros com mensagens claras e retorna true/false.
-     */
     validar() {
         if (this.naoTerminais.length === 0) {
             this.erros.push('O conjunto de não-terminais (N) não pode estar vazio.');
@@ -165,9 +133,9 @@ class Gramatica {
             this.erros.push(`Os não-terminais [${naoTerminaisInvalidos.join(', ')}] devem ser letras maiúsculas de A a Z.`);
         }
 
-        const terminaisInvalidos = this.terminais.filter(simbolo => !/^[a-z]$/.test(simbolo));
+        const terminaisInvalidos = this.terminais.filter(simbolo => !/^[a-z0-9]$/.test(simbolo));
         if (terminaisInvalidos.length > 0) {
-            this.erros.push(`Os terminais [${terminaisInvalidos.join(', ')}] devem ser letras minúsculas de a a z.`);
+            this.erros.push(`Os terminais [${terminaisInvalidos.join(', ')}] devem ser letras minúsculas de a a z ou dígitos de 0 a 9.`);
         }
 
         const intersecao = this.naoTerminais.filter(nt => this.terminais.includes(nt));
@@ -214,10 +182,6 @@ class Gramatica {
         return this.erros.length === 0;
     }
 
-    /**
-     * Verifica se a gramática é regular (linear à direita): cada produção deve
-     * conter apenas terminais, com no máximo um não-terminal, sempre na última posição.
-     */
     ehGramaticaRegular() {
         for (const ladoEsquerdo in this.producoes) {
             for (const rhs of this.producoes[ladoEsquerdo]) {
