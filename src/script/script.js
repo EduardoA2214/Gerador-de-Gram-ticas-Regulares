@@ -1,15 +1,16 @@
 /**
  * Ponto de entrada da aplicação.
- * Inicializa a interface, conecta os eventos dos botões e orquestra
- * a chamada dos demais módulos (exemplos, gramática, derivação, pilha).
+ * Inicializa a interface, conecta os eventos e conduz o usuário por um
+ * assistente de 4 etapas: Símbolos → Produções → Validar → Gerar.
  *
- * Também mantém o "rascunho" da gramática que está sendo montada de forma
- * guiada (Passos 1 a 4): não-terminais, terminais, símbolo inicial e as
- * produções já adicionadas. Esse rascunho é convertido para o formato de
- * texto que Gramatica.carregarDeTexto já entende só no momento de validar.
+ * Mantém o "rascunho" da gramática que está sendo montada (não-terminais,
+ * terminais, símbolo inicial e produções). Esse rascunho só é convertido
+ * para o formato de texto que Gramatica.carregarDeTexto entende no
+ * momento de validar (Etapa 3).
  */
 (function () {
     const rascunho = {
+        nome: '',
         naoTerminais: [],
         terminais: [],
         simboloInicial: '',
@@ -19,31 +20,47 @@
     };
 
     let gramaticaAtual = null;
+    let etapaAtual = 1;
+    let maiorEtapaAlcancada = 1;
 
     function iniciarAplicacao() {
         Interface.inicializar();
         Interface.popularSelectExemplos(Exemplos.obterTodos());
-        renderizarRascunho();
         configurarEventos();
+        renderizarTudo();
+        irParaEtapa(1);
     }
 
     function configurarEventos() {
+        Interface.refs.stepperItens.forEach((botao, indice) => {
+            botao.addEventListener('click', () => irParaEtapa(indice + 1));
+        });
+
+        Interface.refs.btnExemploToggle.addEventListener('click', () => Interface.alternarExemploPicker());
         Interface.refs.btnCarregarExemplo.addEventListener('click', tratarCarregarExemplo);
 
+        Interface.refs.inputNomeGramatica.addEventListener('input', tratarMudarNome);
         configurarCampoDeSimbolo(Interface.refs.inputNovoNaoTerminal, 'maiusculo');
         configurarCampoDeSimbolo(Interface.refs.inputNovoTerminal, 'minusculo');
 
         Interface.refs.btnAddNaoTerminal.addEventListener('click', tratarAdicionarNaoTerminal);
         Interface.refs.btnAddTerminal.addEventListener('click', tratarAdicionarTerminal);
-        Interface.refs.selectSimboloInicial.addEventListener('change', tratarSelecionarSimboloInicial);
-        Interface.refs.selectLadoEsquerdo.addEventListener('change', tratarSelecionarLadoEsquerdo);
+        Interface.refs.inputNovoNaoTerminal.addEventListener('keydown', tratarEnterNaoTerminal);
+        Interface.refs.inputNovoTerminal.addEventListener('keydown', tratarEnterTerminal);
+        Interface.refs.btnProximo1.addEventListener('click', () => avancarPara(2));
+
         Interface.refs.btnRemoverUltimoSimbolo.addEventListener('click', tratarRemoverUltimoSimbolo);
         Interface.refs.btnLimparRhs.addEventListener('click', tratarLimparRhs);
         Interface.refs.btnAdicionarAlternativa.addEventListener('click', tratarAdicionarAlternativa);
+        Interface.refs.btnVoltar2.addEventListener('click', () => irParaEtapa(1));
+        Interface.refs.btnProximo2.addEventListener('click', () => avancarPara(3));
 
-        Interface.refs.btnValidar.addEventListener('click', tratarValidarGramatica);
+        Interface.refs.btnVoltar3.addEventListener('click', () => irParaEtapa(2));
+        Interface.refs.btnValidar.addEventListener('click', tratarValidarOuProximo);
+
         Interface.refs.btnGerarSentenca.addEventListener('click', tratarGerarSentenca);
-        Interface.refs.btnLimpar.addEventListener('click', tratarLimpar);
+        Interface.refs.btnVoltar4.addEventListener('click', () => irParaEtapa(3));
+        Interface.refs.btnNovaGramatica.addEventListener('click', tratarNovaGramatica);
     }
 
     /** Mantém nos campos apenas uma letra, usando a caixa esperada para cada tipo de símbolo. */
@@ -57,18 +74,64 @@
         });
     }
 
-    /** Redesenha todos os widgets do construtor guiado a partir do rascunho atual. */
-    function renderizarRascunho() {
-        Interface.renderizarChipsNaoTerminais(rascunho.naoTerminais, removerNaoTerminal);
-        Interface.renderizarChipsTerminais(rascunho.terminais, removerTerminal);
-        Interface.renderizarSelectSimboloInicial(rascunho.naoTerminais, rascunho.simboloInicial);
-        Interface.renderizarSelectLadoEsquerdo(rascunho.naoTerminais, rascunho.ladoEsquerdoAtual);
-        Interface.renderizarPaleta(rascunho.naoTerminais, rascunho.terminais, rascunho.rhsAtual, tratarClicarSimboloRhs);
-        Interface.renderizarRhsAtual(rascunho.rhsAtual);
-        Interface.renderizarListaProducoes(rascunho.producoes, removerProducao);
+    function tratarEnterNaoTerminal(evento) {
+        if (evento.key === 'Enter') {
+            evento.preventDefault();
+            tratarAdicionarNaoTerminal();
+        }
     }
 
-    // ---- Passo 1: não-terminais ----
+    function tratarEnterTerminal(evento) {
+        if (evento.key === 'Enter') {
+            evento.preventDefault();
+            tratarAdicionarTerminal();
+        }
+    }
+
+    /** Muda para a etapa indicada, se ela já tiver sido alcançada. */
+    function irParaEtapa(numero) {
+        if (numero > maiorEtapaAlcancada) {
+            return;
+        }
+        etapaAtual = numero;
+        Interface.mostrarEtapa(numero);
+        Interface.atualizarStepper(etapaAtual, maiorEtapaAlcancada);
+    }
+
+    /** Avança para a etapa indicada, liberando-a permanentemente no stepper. */
+    function avancarPara(numero) {
+        maiorEtapaAlcancada = Math.max(maiorEtapaAlcancada, numero);
+        irParaEtapa(numero);
+    }
+
+    /** Redesenha todos os widgets do assistente a partir do rascunho atual. */
+    function renderizarTudo() {
+        Interface.renderizarChipsNaoTerminais(rascunho.naoTerminais, removerNaoTerminal);
+        Interface.renderizarChipsTerminais(rascunho.terminais, removerTerminal);
+        Interface.renderizarChipsSimboloInicial(rascunho.naoTerminais, rascunho.simboloInicial, selecionarSimboloInicial);
+        Interface.habilitarProximo1(
+            rascunho.naoTerminais.length > 0 && rascunho.terminais.length > 0 && !!rascunho.simboloInicial
+        );
+
+        Interface.renderizarChipsLadoEsquerdo(rascunho.naoTerminais, rascunho.ladoEsquerdoAtual, selecionarLadoEsquerdo);
+        Interface.renderizarPaleta(rascunho.naoTerminais, rascunho.terminais, rascunho.rhsAtual, clicarSimboloRhs);
+        Interface.renderizarProducaoPreview(rascunho.ladoEsquerdoAtual, rascunho.rhsAtual);
+        Interface.atualizarAcoesConstrutor(rascunho.ladoEsquerdoAtual, rascunho.rhsAtual);
+        Interface.renderizarListaProducoes(rascunho.producoes, removerProducao);
+        Interface.habilitarProximo2(rascunho.producoes.length > 0);
+    }
+
+    /** Qualquer mudança estrutural (N, T, S ou P) invalida uma validação anterior. */
+    function invalidarGramaticaAtual() {
+        gramaticaAtual = null;
+        Interface.definirRotuloBotaoValidar('Validar gramática');
+    }
+
+    // ---- Etapa 1: símbolos ----
+
+    function tratarMudarNome() {
+        rascunho.nome = Interface.obterNomeGramatica();
+    }
 
     function tratarAdicionarNaoTerminal() {
         const valor = Interface.obterValorNovoNaoTerminal().trim();
@@ -76,25 +139,27 @@
             return;
         }
         if (!/^[A-Z]$/.test(valor)) {
-            Interface.mostrarMensagemGramatica('O não-terminal deve ser uma única letra maiúscula de A a Z.', 'erro');
+            Interface.mostrarMensagemEtapa(1, 'O não-terminal deve ser uma única letra maiúscula de A a Z.', 'erro');
             return;
         }
         if (rascunho.naoTerminais.includes(valor)) {
-            Interface.mostrarMensagemGramatica(`"${valor}" já foi adicionado como não-terminal.`, 'erro');
+            Interface.mostrarMensagemEtapa(1, `"${valor}" já foi adicionado como não-terminal.`, 'erro');
             return;
         }
         if (rascunho.terminais.includes(valor)) {
-            Interface.mostrarMensagemGramatica(`"${valor}" já é um terminal — um símbolo não pode ser as duas coisas.`, 'erro');
+            Interface.mostrarMensagemEtapa(1, `"${valor}" já é um terminal — um símbolo não pode ser as duas coisas.`, 'erro');
             return;
         }
 
+        invalidarGramaticaAtual();
         rascunho.naoTerminais.push(valor);
         Interface.limparCampoNovoNaoTerminal();
-        Interface.mostrarMensagemGramatica('', 'limpar');
-        renderizarRascunho();
+        Interface.mostrarMensagemEtapa(1, '', 'limpar');
+        renderizarTudo();
     }
 
     function removerNaoTerminal(simbolo) {
+        invalidarGramaticaAtual();
         rascunho.naoTerminais = rascunho.naoTerminais.filter(s => s !== simbolo);
         rascunho.producoes = rascunho.producoes.filter(p => p.esquerda !== simbolo && !p.direita.includes(simbolo));
 
@@ -102,10 +167,8 @@
         if (rascunho.ladoEsquerdoAtual === simbolo) rascunho.ladoEsquerdoAtual = '';
         if (rascunho.rhsAtual.includes(simbolo)) rascunho.rhsAtual = [];
 
-        renderizarRascunho();
+        renderizarTudo();
     }
-
-    // ---- Passo 2: terminais ----
 
     function tratarAdicionarTerminal() {
         const valor = Interface.obterValorNovoTerminal().trim();
@@ -113,46 +176,50 @@
             return;
         }
         if (!/^[a-z]$/.test(valor)) {
-            Interface.mostrarMensagemGramatica('O terminal deve ser uma única letra minúscula de a a z.', 'erro');
+            Interface.mostrarMensagemEtapa(1, 'O terminal deve ser uma única letra minúscula de a a z.', 'erro');
             return;
         }
         if (rascunho.terminais.includes(valor)) {
-            Interface.mostrarMensagemGramatica(`"${valor}" já foi adicionado como terminal.`, 'erro');
+            Interface.mostrarMensagemEtapa(1, `"${valor}" já foi adicionado como terminal.`, 'erro');
             return;
         }
         if (rascunho.naoTerminais.includes(valor)) {
-            Interface.mostrarMensagemGramatica(`"${valor}" já é um não-terminal — um símbolo não pode ser as duas coisas.`, 'erro');
+            Interface.mostrarMensagemEtapa(1, `"${valor}" já é um não-terminal — um símbolo não pode ser as duas coisas.`, 'erro');
             return;
         }
 
+        invalidarGramaticaAtual();
         rascunho.terminais.push(valor);
         Interface.limparCampoNovoTerminal();
-        Interface.mostrarMensagemGramatica('', 'limpar');
-        renderizarRascunho();
+        Interface.mostrarMensagemEtapa(1, '', 'limpar');
+        renderizarTudo();
     }
 
     function removerTerminal(simbolo) {
+        invalidarGramaticaAtual();
         rascunho.terminais = rascunho.terminais.filter(s => s !== simbolo);
         rascunho.producoes = rascunho.producoes.filter(p => !p.direita.includes(simbolo));
 
         if (rascunho.rhsAtual.includes(simbolo)) rascunho.rhsAtual = [];
 
-        renderizarRascunho();
+        renderizarTudo();
     }
 
-    // ---- Passo 3: símbolo inicial ----
-
-    function tratarSelecionarSimboloInicial() {
-        rascunho.simboloInicial = Interface.obterSimboloInicialSelecionado();
+    function selecionarSimboloInicial(simbolo) {
+        invalidarGramaticaAtual();
+        rascunho.simboloInicial = rascunho.simboloInicial === simbolo ? '' : simbolo;
+        renderizarTudo();
     }
 
-    // ---- Passo 4: produções ----
+    // ---- Etapa 2: produções ----
 
-    function tratarSelecionarLadoEsquerdo() {
-        rascunho.ladoEsquerdoAtual = Interface.obterLadoEsquerdoSelecionado();
+    function selecionarLadoEsquerdo(simbolo) {
+        rascunho.ladoEsquerdoAtual = rascunho.ladoEsquerdoAtual === simbolo ? '' : simbolo;
+        rascunho.rhsAtual = [];
+        renderizarTudo();
     }
 
-    function tratarClicarSimboloRhs(simbolo) {
+    function clicarSimboloRhs(simbolo) {
         if (simbolo === 'ε') {
             if (rascunho.rhsAtual.length > 0) return;
             rascunho.rhsAtual = ['ε'];
@@ -162,38 +229,102 @@
             if (travado || rascunho.naoTerminais.includes(ultimoSimbolo)) return;
             rascunho.rhsAtual.push(simbolo);
         }
-        renderizarRascunho();
+        renderizarTudo();
     }
 
     function tratarRemoverUltimoSimbolo() {
         rascunho.rhsAtual.pop();
-        renderizarRascunho();
+        renderizarTudo();
     }
 
     function tratarLimparRhs() {
         rascunho.rhsAtual = [];
-        renderizarRascunho();
+        renderizarTudo();
     }
 
     function tratarAdicionarAlternativa() {
-        if (!rascunho.ladoEsquerdoAtual) {
-            Interface.mostrarMensagemGramatica('Selecione o não-terminal do lado esquerdo antes de adicionar a produção.', 'erro');
-            return;
-        }
-        if (rascunho.rhsAtual.length === 0) {
-            Interface.mostrarMensagemGramatica('Monte o lado direito clicando nos símbolos antes de adicionar a produção.', 'erro');
+        if (!rascunho.ladoEsquerdoAtual || rascunho.rhsAtual.length === 0) {
             return;
         }
 
+        invalidarGramaticaAtual();
         rascunho.producoes.push({ esquerda: rascunho.ladoEsquerdoAtual, direita: [...rascunho.rhsAtual] });
         rascunho.rhsAtual = [];
-        Interface.mostrarMensagemGramatica('', 'limpar');
-        renderizarRascunho();
+        renderizarTudo();
     }
 
     function removerProducao(indice) {
+        invalidarGramaticaAtual();
         rascunho.producoes.splice(indice, 1);
-        renderizarRascunho();
+        renderizarTudo();
+    }
+
+    // ---- Etapa 3: validar ----
+
+    function tratarValidarOuProximo() {
+        if (gramaticaAtual) {
+            avancarPara(4);
+            return;
+        }
+
+        const naoTerminaisTexto = rascunho.naoTerminais.join(', ');
+        const terminaisTexto = rascunho.terminais.join(', ');
+        const producoesTexto = rascunho.producoes.map(p => `${p.esquerda} -> ${p.direita.join('')}`).join('\n');
+        const inicialTexto = rascunho.simboloInicial;
+
+        const gramatica = new Gramatica();
+        const valida = gramatica.carregarDeTexto(naoTerminaisTexto, terminaisTexto, producoesTexto, inicialTexto);
+
+        if (!valida) {
+            Interface.mostrarErrosGramatica(gramatica.obterErros());
+            return;
+        }
+
+        gramaticaAtual = gramatica;
+        Interface.mostrarMensagemEtapa(3, 'Gramática válida.', 'sucesso');
+        Interface.mostrarResumoGramatica(gramatica, rascunho.nome);
+        Interface.definirRotuloBotaoValidar('Próximo');
+    }
+
+    // ---- Etapa 4: gerar ----
+
+    function tratarGerarSentenca() {
+        if (!gramaticaAtual) {
+            return;
+        }
+
+        const resultado = Derivacao.gerarSentenca(gramaticaAtual);
+
+        Interface.mostrarSentenca(resultado.sentenca);
+        Interface.mostrarMensagemDerivacao(resultado.interrompida ? resultado.motivoInterrupcao : '', resultado.interrompida ? 'erro' : 'limpar');
+        Interface.mostrarDerivacaoSimplificada(resultado.formasSentenciais);
+        Interface.mostrarHistoricoPilha(resultado.etapas);
+        Interface.mostrarTabelaDerivacao(resultado.etapas);
+
+        const expressaoRegular = Derivacao.converterParaExpressaoRegular(gramaticaAtual);
+        Interface.mostrarExpressaoRegular(expressaoRegular);
+    }
+
+    function tratarNovaGramatica() {
+        rascunho.nome = '';
+        rascunho.naoTerminais = [];
+        rascunho.terminais = [];
+        rascunho.simboloInicial = '';
+        rascunho.ladoEsquerdoAtual = '';
+        rascunho.rhsAtual = [];
+        rascunho.producoes = [];
+        gramaticaAtual = null;
+        maiorEtapaAlcancada = 1;
+
+        Interface.definirNomeGramatica('');
+        Interface.limparResultados();
+        Interface.mostrarMensagemEtapa(1, '', 'limpar');
+        Interface.mostrarMensagemEtapa(2, '', 'limpar');
+        Interface.mostrarMensagemEtapa(3, '', 'limpar');
+        Interface.definirRotuloBotaoValidar('Validar gramática');
+
+        renderizarTudo();
+        irParaEtapa(1);
     }
 
     // ---- Exemplos prontos ----
@@ -203,7 +334,7 @@
         const exemplo = Exemplos.obterPorIndice(indice);
 
         if (!exemplo) {
-            Interface.mostrarMensagemGramatica('Selecione um exemplo válido.', 'erro');
+            Interface.mostrarMensagemEtapa(1, 'Selecione um exemplo válido.', 'erro');
             return;
         }
 
@@ -214,10 +345,10 @@
         rascunho.rhsAtual = [];
         rascunho.producoes = converterTextoProducoesEmLista(exemplo.producoes, rascunho.naoTerminais);
 
-        gramaticaAtual = null;
+        invalidarGramaticaAtual();
         Interface.limparResultados();
-        Interface.mostrarMensagemGramatica(`Exemplo "${exemplo.nome}" carregado. Clique em "Validar Gramática" para continuar.`, 'info');
-        renderizarRascunho();
+        Interface.mostrarMensagemEtapa(1, `Exemplo "${exemplo.nome}" carregado.`, 'info');
+        renderizarTudo();
     }
 
     /** Converte o texto "S -> aS | ab" (formato dos exemplos) na mesma lista {esquerda, direita} do construtor guiado. */
@@ -232,57 +363,11 @@
 
             const esquerda = partes[0].trim();
             partes[1].split('|').forEach(alternativa => {
-                const direita = auxiliar.tokenizar(alternativa);
-                lista.push({ esquerda, direita });
+                lista.push({ esquerda, direita: auxiliar.tokenizar(alternativa) });
             });
         });
 
         return lista;
-    }
-
-    // ---- Validação e geração ----
-
-    function tratarValidarGramatica() {
-        const naoTerminaisTexto = rascunho.naoTerminais.join(', ');
-        const terminaisTexto = rascunho.terminais.join(', ');
-        const producoesTexto = rascunho.producoes.map(p => `${p.esquerda} -> ${p.direita.join('')}`).join('\n');
-        const inicialTexto = rascunho.simboloInicial;
-
-        const gramatica = new Gramatica();
-        const valida = gramatica.carregarDeTexto(naoTerminaisTexto, terminaisTexto, producoesTexto, inicialTexto);
-
-        if (!valida) {
-            gramaticaAtual = null;
-            Interface.mostrarErrosGramatica(gramatica.obterErros());
-            Interface.limparResultados();
-            return;
-        }
-
-        gramaticaAtual = gramatica;
-        Interface.mostrarMensagemGramatica('Gramática válida! Você já pode gerar sentenças.', 'sucesso');
-        Interface.mostrarResumoGramatica(gramatica);
-
-        const expressaoRegular = Derivacao.converterParaExpressaoRegular(gramatica);
-        Interface.mostrarExpressaoRegular(expressaoRegular);
-    }
-
-    function tratarGerarSentenca() {
-        if (!gramaticaAtual) {
-            Interface.mostrarMensagemGramatica('Valide uma gramática antes de gerar sentenças.', 'erro');
-            return;
-        }
-
-        const resultado = Derivacao.gerarSentenca(gramaticaAtual);
-
-        Interface.mostrarSentenca(resultado.sentenca);
-        Interface.mostrarMensagemDerivacao(resultado.interrompida ? resultado.motivoInterrupcao : '', resultado.interrompida ? 'erro' : 'limpar');
-        Interface.mostrarDerivacaoSimplificada(resultado.formasSentenciais);
-        Interface.mostrarHistoricoPilha(resultado.etapas);
-        Interface.mostrarTabelaDerivacao(resultado.etapas);
-    }
-
-    function tratarLimpar() {
-        Interface.limparResultados();
     }
 
     document.addEventListener('DOMContentLoaded', iniciarAplicacao);

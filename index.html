@@ -7,157 +7,240 @@
     <link rel="stylesheet" href="src/style/style.css">
 </head>
 <body>
+    <svg aria-hidden="true" style="position:absolute; width:0; height:0; overflow:hidden;">
+        <symbol id="icone-seta-direita" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+        </symbol>
+    </svg>
+
     <header class="cabecalho">
-        <div class="cabecalho-conteudo">
-            <h1>Linguagens Formais e Autômatos</h1>
-            <p>Gerador de sentenças e expressões regulares</p>
-        </div>
+        <p class="cabecalho-etiqueta">Linguagens Formais e Autômatos</p>
+        <h1>Gramáticas Regulares</h1>
     </header>
 
     <main class="container">
+        <div class="assistente">
 
-        <!-- GRAMÁTICA -->
-        <section class="card">
-            <h2>Gramática Regular <span class="formal">G = {N, T, P, S}</span></h2>
-            <p class="card-introducao">Defina os símbolos da gramática, monte as produções e valide antes de iniciar a derivação.</p>
+            <nav class="stepper" aria-label="Etapas da criação da gramática">
+                <ol class="stepper-lista">
+                    <li><button type="button" class="stepper-item" id="stepper-item-1" data-etapa="1"><span class="stepper-numero">1</span><span class="stepper-rotulo">Símbolos</span></button></li>
+                    <li><button type="button" class="stepper-item" id="stepper-item-2" data-etapa="2"><span class="stepper-numero">2</span><span class="stepper-rotulo">Produções</span></button></li>
+                    <li><button type="button" class="stepper-item" id="stepper-item-3" data-etapa="3"><span class="stepper-numero">3</span><span class="stepper-rotulo">Validar</span></button></li>
+                    <li><button type="button" class="stepper-item" id="stepper-item-4" data-etapa="4"><span class="stepper-numero">4</span><span class="stepper-rotulo">Gerar</span></button></li>
+                </ol>
+            </nav>
 
-            <div class="linha-controles">
-                <label for="select-exemplo">Carregar um exemplo (opcional)</label>
-                <div class="grupo-inline">
-                    <select id="select-exemplo"></select>
-                    <button id="btn-carregar-exemplo" class="botao-hover">Carregar exemplo</button>
-                </div>
-            </div>
+            <section class="painel">
 
-            <div class="grupo-ntS">
-                <div class="coluna-ntS">
-                    <h3>Não-terminais (N)</h3>
-                    <div class="linha-adicionar">
-                        <input type="text" id="input-novo-nao-terminal" maxlength="1" pattern="[A-Z]" placeholder="S" title="Digite uma letra maiúscula de A a Z" autocomplete="off">
-                        <button id="btn-add-nao-terminal" class="botao-utilitario">Adicionar</button>
+                <!-- ETAPA 1 — SÍMBOLOS -->
+                <div class="etapa" id="etapa-1">
+                    <h2 tabindex="-1">Defina os símbolos</h2>
+                    <p class="etapa-descricao">Comece cadastrando os símbolos que a sua gramática vai usar.</p>
+
+                    <div class="campo">
+                        <label for="input-nome-gramatica">Nome da gramática <span class="opcional">(opcional)</span></label>
+                        <input type="text" id="input-nome-gramatica" placeholder="Ex: números binários pares">
                     </div>
-                    <div id="chips-nao-terminais" class="lista-chips"></div>
-                </div>
 
-                <div class="coluna-ntS">
-                    <h3>Terminais (T)</h3>
-                    <div class="linha-adicionar">
-                        <input type="text" id="input-novo-terminal" maxlength="1" pattern="[a-z]" placeholder="a" title="Digite uma letra minúscula de a a z" autocomplete="off">
-                        <button id="btn-add-terminal" class="botao-utilitario">Adicionar</button>
+                    <div class="campo">
+                        <span class="rotulo-com-ajuda">
+                            Não-terminais (N)
+                            <span class="ajuda">
+                                <button type="button" class="ajuda-botao" aria-label="O que é um não-terminal?">?</button>
+                                <span class="ajuda-texto" role="tooltip">Símbolo que pode aparecer no lado esquerdo de uma produção. Representa uma etapa da derivação ainda não finalizada.</span>
+                            </span>
+                        </span>
+                        <div class="linha-adicionar">
+                            <input type="text" id="input-novo-nao-terminal" maxlength="1" pattern="[A-Z]" placeholder="S" title="Digite uma letra maiúscula de A a Z" autocomplete="off">
+                            <button id="btn-add-nao-terminal" class="botao-secundario">Adicionar</button>
+                        </div>
+                        <div id="chips-nao-terminais" class="lista-chips"></div>
                     </div>
-                    <div id="chips-terminais" class="lista-chips"></div>
+
+                    <div class="campo">
+                        <span class="rotulo-com-ajuda">
+                            Terminais (T)
+                            <span class="ajuda">
+                                <button type="button" class="ajuda-botao" aria-label="O que é um terminal?">?</button>
+                                <span class="ajuda-texto" role="tooltip">Símbolo que pode aparecer na sentença final gerada pela gramática — não pode ser mais decomposto.</span>
+                            </span>
+                        </span>
+                        <div class="linha-adicionar">
+                            <input type="text" id="input-novo-terminal" maxlength="1" pattern="[a-z]" placeholder="a" title="Digite uma letra minúscula de a a z" autocomplete="off">
+                            <button id="btn-add-terminal" class="botao-secundario">Adicionar</button>
+                        </div>
+                        <div id="chips-terminais" class="lista-chips"></div>
+                    </div>
+
+                    <div class="campo">
+                        <span class="rotulo-com-ajuda">
+                            Símbolo inicial (S)
+                            <span class="ajuda">
+                                <button type="button" class="ajuda-botao" aria-label="O que é o símbolo inicial?">?</button>
+                                <span class="ajuda-texto" role="tooltip">Símbolo usado para começar a derivação. Precisa ser um dos não-terminais cadastrados acima.</span>
+                            </span>
+                        </span>
+                        <div id="chips-simbolo-inicial" class="lista-chips"></div>
+                    </div>
+
+                    <button type="button" class="botao-fantasma" id="btn-exemplo-toggle">Usar um exemplo pronto</button>
+                    <div class="exemplo-picker" id="exemplo-picker" hidden>
+                        <select id="select-exemplo"></select>
+                        <button id="btn-carregar-exemplo" class="botao-secundario">Carregar</button>
+                    </div>
+
+                    <div id="mensagem-etapa-1" class="etapa-mensagem"></div>
+
+                    <div class="acoes-etapa acoes-etapa-fim">
+                        <button id="btn-proximo-1" class="botao-principal" disabled>
+                            Próximo
+                            <svg class="icone-seta-btn" width="16" height="16"><use href="#icone-seta-direita"></use></svg>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="coluna-ntS">
-                    <h3>Símbolo inicial (S)</h3>
-                    <select id="select-simbolo-inicial">
-                        <option value="">Selecione...</option>
-                    </select>
-                </div>
-            </div>
+                <!-- ETAPA 2 — PRODUÇÕES -->
+                <div class="etapa" id="etapa-2" hidden>
+                    <h2 tabindex="-1">Crie as produções</h2>
+                    <p class="etapa-descricao">Escolha o lado esquerdo e clique nos símbolos, na ordem certa, para montar o lado direito.</p>
 
-            <div class="passo-guiado">
-                <h3>Produções (P)</h3>
+                    <div class="campo">
+                        <span class="rotulo-com-ajuda">
+                            Lado esquerdo
+                            <span class="ajuda">
+                                <button type="button" class="ajuda-botao" aria-label="O que é o lado esquerdo de uma produção?">?</button>
+                                <span class="ajuda-texto" role="tooltip">O não-terminal que vai ser substituído. Toda produção tem a forma "lado esquerdo → lado direito".</span>
+                            </span>
+                        </span>
+                        <div id="chips-lado-esquerdo" class="lista-chips"></div>
+                    </div>
 
-                <div class="campo-producao">
-                    <label for="select-lado-esquerdo">Lado esquerdo</label>
-                    <select id="select-lado-esquerdo">
-                        <option value="">Selecione...</option>
-                    </select>
-                </div>
+                    <div class="construtor-producao">
+                        <div class="producao-preview" id="producao-preview"></div>
 
-                <div class="campo-producao">
-                    <label>Lado direito — clique nos símbolos, na ordem</label>
-                    <div id="paleta-simbolos" class="paleta-simbolos"></div>
-                </div>
+                        <div class="paleta">
+                            <p class="paleta-rotulo">Terminais</p>
+                            <div id="paleta-terminais" class="paleta-simbolos"></div>
 
-                <div class="rhs-construindo">
-                    <span class="destaque-rotulo">Construindo:</span>
-                    <span id="rhs-atual" class="rhs-atual">(vazio)</span>
-                </div>
+                            <p class="paleta-rotulo">Não-terminais</p>
+                            <div id="paleta-nao-terminais" class="paleta-simbolos"></div>
 
-                <div class="grupo-botoes">
-                    <button id="btn-remover-ultimo-simbolo" class="botao-utilitario">Remover último símbolo</button>
-                    <button id="btn-limpar-rhs" class="botao-utilitario">Limpar</button>
-                    <button id="btn-adicionar-alternativa" class="botao-utilitario">Adicionar alternativa</button>
-                </div>
+                            <button type="button" id="btn-simbolo-epsilon" class="simbolo-btn simbolo-btn-epsilon">ε (vazio)</button>
+                        </div>
 
-                <ul id="lista-producoes" class="lista-producoes"></ul>
-            </div>
+                        <div class="construtor-acoes">
+                            <button type="button" id="btn-remover-ultimo-simbolo" class="botao-fantasma">Desfazer</button>
+                            <button type="button" id="btn-limpar-rhs" class="botao-fantasma">Limpar</button>
+                            <button type="button" id="btn-adicionar-alternativa" class="botao-secundario">Adicionar alternativa</button>
+                        </div>
+                    </div>
 
-            <button id="btn-validar" class="botao-hover">Validar gramática</button>
+                    <div class="campo">
+                        <h3 class="subtitulo-secao">Produções criadas</h3>
+                        <ul id="lista-producoes" class="lista-producoes"></ul>
+                    </div>
 
-            <div id="mensagem-gramatica" class="mensagem"></div>
+                    <div id="mensagem-etapa-2" class="etapa-mensagem"></div>
 
-            <div id="resumo-gramatica" class="resumo-gramatica" hidden>
-                <p><strong>N:</strong> <span id="resumo-nao-terminais"></span>
-                    &nbsp;·&nbsp; <strong>T:</strong> <span id="resumo-terminais"></span>
-                    &nbsp;·&nbsp; <strong>S:</strong> <span id="resumo-inicial"></span></p>
-                <p><strong>P:</strong></p>
-                <ul id="resumo-producoes" class="lista-monoespacada"></ul>
-            </div>
-        </section>
-
-        <!-- RESULTADO -->
-        <section class="card">
-            <h2>Resultado</h2>
-            <p class="card-introducao">Acompanhe a sentença produzida e a expressão regular equivalente.</p>
-
-            <div class="grupo-botoes">
-                <button id="btn-gerar-sentenca" class="botao-hover">Gerar sentença</button>
-                <button id="btn-limpar" class="botao-hover">Limpar</button>
-            </div>
-
-            <div id="mensagem-derivacao" class="mensagem"></div>
-
-            <div class="destaque">
-                <span class="destaque-rotulo">Sentença gerada:</span>
-                <span id="sentenca-gerada" class="destaque-valor">—</span>
-            </div>
-
-            <div id="derivacao-simplificada" class="derivacao-simplificada"></div>
-
-            <div class="destaque">
-                <span class="destaque-rotulo">Expressão regular:</span>
-                <span id="regex-resultado" class="destaque-valor">—</span>
-            </div>
-
-            <div id="regex-mensagem" class="mensagem"></div>
-        </section>
-
-        <!-- DETALHES DO PROCESSO (recolhível) -->
-        <details class="card detalhes-processo">
-            <summary>Ver detalhes do processo (pilha, tabela de derivação e equações)</summary>
-
-            <div class="detalhes-conteudo">
-                <h3>Pilha</h3>
-                <p class="dica">O elemento mais à direita é o topo da pilha. Cada linha mostra o estado da pilha em uma etapa da derivação.</p>
-                <ul id="historico-pilha" class="historico-pilha lista-monoespacada"></ul>
-
-                <h3>Tabela de derivação</h3>
-                <div class="tabela-wrapper">
-                    <table class="tabela-derivacao">
-                        <thead>
-                            <tr>
-                                <th>Etapa</th>
-                                <th>Produção</th>
-                                <th>Pilha</th>
-                                <th>Saída</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-derivacao-corpo"></tbody>
-                    </table>
+                    <div class="acoes-etapa">
+                        <button type="button" id="btn-voltar-2" class="botao-fantasma">Voltar</button>
+                        <button type="button" id="btn-proximo-2" class="botao-principal" disabled>
+                            Próximo
+                            <svg class="icone-seta-btn" width="16" height="16"><use href="#icone-seta-direita"></use></svg>
+                        </button>
+                    </div>
                 </div>
 
-                <h3>Equação da expressão regular</h3>
-                <p id="regex-equacao-final" class="equacao-final">—</p>
-            </div>
-        </details>
+                <!-- ETAPA 3 — VALIDAR -->
+                <div class="etapa" id="etapa-3" hidden>
+                    <h2 tabindex="-1">Valide a gramática</h2>
+                    <p class="etapa-descricao">Confira o resumo abaixo. Se houver algum problema, você pode voltar e corrigir sem perder o que já fez.</p>
 
+                    <div id="resumo-gramatica" class="resumo-gramatica" hidden>
+                        <p id="resumo-nome" class="resumo-nome"></p>
+                        <p><strong>N</strong> = {<span id="resumo-nao-terminais"></span>}</p>
+                        <p><strong>T</strong> = {<span id="resumo-terminais"></span>}</p>
+                        <p><strong>S</strong> = <span id="resumo-inicial"></span></p>
+                        <p><strong>P:</strong></p>
+                        <ul id="resumo-producoes" class="lista-monoespacada"></ul>
+                    </div>
+
+                    <div id="mensagem-etapa-3" class="etapa-mensagem"></div>
+
+                    <div class="acoes-etapa">
+                        <button type="button" id="btn-voltar-3" class="botao-fantasma">Voltar</button>
+                        <button type="button" id="btn-validar" class="botao-principal">
+                            <span id="btn-validar-texto">Validar gramática</span>
+                            <svg class="icone-seta-btn" width="16" height="16"><use href="#icone-seta-direita"></use></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ETAPA 4 — GERAR -->
+                <div class="etapa" id="etapa-4" hidden>
+                    <h2 tabindex="-1">Gere uma sentença</h2>
+                    <p class="etapa-descricao">A cada clique, uma produção diferente pode ser escolhida — gere quantas sentenças quiser.</p>
+
+                    <div class="acoes-etapa acoes-etapa-inicio">
+                        <button type="button" id="btn-gerar-sentenca" class="botao-principal">Gerar sentença</button>
+                    </div>
+
+                    <div id="mensagem-derivacao" class="etapa-mensagem"></div>
+
+                    <div class="destaque">
+                        <span class="destaque-rotulo">Sentença gerada</span>
+                        <span id="sentenca-gerada" class="destaque-valor">—</span>
+                    </div>
+
+                    <div id="derivacao-simplificada" class="derivacao-simplificada"></div>
+
+                    <div class="destaque">
+                        <span class="destaque-rotulo">Expressão regular equivalente</span>
+                        <span id="regex-resultado" class="destaque-valor">—</span>
+                    </div>
+
+                    <div id="regex-mensagem" class="etapa-mensagem"></div>
+
+                    <details class="detalhes-processo">
+                        <summary>Ver detalhes do processo</summary>
+                        <div class="detalhes-conteudo">
+                            <h3 class="subtitulo-secao">Pilha em cada etapa</h3>
+                            <p class="dica">O elemento mais à direita é o topo da pilha.</p>
+                            <ul id="historico-pilha" class="historico-pilha lista-monoespacada"></ul>
+
+                            <h3 class="subtitulo-secao">Tabela de derivação</h3>
+                            <div class="tabela-wrapper">
+                                <table class="tabela-derivacao">
+                                    <thead>
+                                        <tr>
+                                            <th>Etapa</th>
+                                            <th>Produção</th>
+                                            <th>Pilha</th>
+                                            <th>Saída</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabela-derivacao-corpo"></tbody>
+                                </table>
+                            </div>
+
+                            <h3 class="subtitulo-secao">Equação da expressão regular</h3>
+                            <p id="regex-equacao-final" class="equacao-final">—</p>
+                        </div>
+                    </details>
+
+                    <div class="acoes-etapa">
+                        <button type="button" id="btn-voltar-4" class="botao-fantasma">Voltar</button>
+                        <button type="button" id="btn-nova-gramatica" class="botao-fantasma">Começar uma nova gramática</button>
+                    </div>
+                </div>
+
+            </section>
+        </div>
     </main>
 
     <footer class="rodape">
-        <p>Eduardo da Silva Assis - Henrique Matiola</p>
+        <p>Disciplina de Linguagens Formais e Autômatos</p>
     </footer>
 
     <script src="src/script/pilha.js"></script>
